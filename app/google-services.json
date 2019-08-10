@@ -1,0 +1,77 @@
+{
+  "project_info": {
+    "project_number": "156686169080",
+    "firebase_url": "https://androidcertification.firebaseio.com",
+    "project_id": "androidcertification",
+    "storage_bucket": "androidcertification.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156686169080:android:3f93920f5dcc3019",
+        "android_client_info": {
+          "package_name": "muchbeer.raum.com.challengeandela"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "156686169080-v5tiurm1fs58sblvum64ji4d8reqpah1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABBhFt0u6S65GmBgIgRAo8HVQgeOfzPQk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "156686169080-v5tiurm1fs58sblvum64ji4d8reqpah1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:156686169080:android:9b2c84f00aed7c5a",
+        "android_client_info": {
+          "package_name": "muchbeer.raum.com.gcertnotekeeper"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "156686169080-qvi7nt1psuf8ebbb2pfkt9pgn3mddea0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "muchbeer.raum.com.gcertnotekeeper",
+            "certificate_hash": "54c95d232b2a8308b3e51545d300d05fbc43ca13"
+          }
+        },
+        {
+          "client_id": "156686169080-v5tiurm1fs58sblvum64ji4d8reqpah1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABBhFt0u6S65GmBgIgRAo8HVQgeOfzPQk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "156686169080-v5tiurm1fs58sblvum64ji4d8reqpah1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

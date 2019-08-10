@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ChallengeAndela</string>
+    <string name="delete_menu">Delete Car</string>
+    <string name="save_menu">Save</string>
+</resources>
