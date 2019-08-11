@@ -137,10 +137,10 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
                         .load(url)
                         .resize(160, 160)
                         .centerCrop()
-                        .placeholder(R.drawable.fail_image)
+                    //    .placeholder(R.drawable.fail_image)
                         .error(R.drawable.fail_image)
                         .into(imageDeal);
             }
         }
-    }
+}
 }

@@ -3,6 +3,7 @@ package muchbeer.raum.com.challengeandela;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -12,12 +13,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,12 +42,28 @@ public class MainActivity extends AppCompatActivity {
     private ChildEventListener mChildListener;
 
     private LinearLayoutManager mCarLayoutManager;
+    FloatingActionButton fab;
     private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+       fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainActivity.this, "working", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        if (FirebaseUtil.isAdmin == true) {fab.show();}
+        else { fab.hide(); }
+
 
   /*      mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;;
@@ -90,8 +111,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        FirebaseUtil.openFbReference("Vehicle", this);
 
+
+        FirebaseUtil.openFbReference("Vehicle", this);
         RecyclerView rvDeals = (RecyclerView) findViewById(R.id.rv_all_cars);
         final CarAdapter adapter = new CarAdapter();
         rvDeals.setAdapter(adapter);
@@ -108,19 +130,10 @@ public class MainActivity extends AppCompatActivity {
         inflater.inflate(R.menu.main, menu);
 
         MenuItem insertMenu = menu.findItem(R.id.insert_menu);
-        setMenuTrue(insertMenu);
+      //  setMenuTrue(insertMenu);
         return true;
     }
 
-    private void setMenuTrue(MenuItem insertMenu) {
-        if (FirebaseUtil.isAdmin == true) {
-
-            insertMenu.setVisible(true);
-        }
-        else {
-            insertMenu.setVisible(false);
-        }
-    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

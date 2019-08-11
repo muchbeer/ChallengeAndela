@@ -3,6 +3,7 @@ package muchbeer.raum.com.challengeandela;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Context;
 import android.content.Intent;
@@ -47,9 +48,10 @@ public class InsertCarActivity extends AppCompatActivity {
     EditText edtDescription;
     EditText edtPrice;
     ImageView imageView;
-    ProgressBar progressBar;
+    ProgressBar mProgressBar;
     CarDeals deal;
     Boolean setMenuInsert;
+    Button btnImage;
     private static final int PICTURE_RESULT =42;
 
     private FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -59,6 +61,10 @@ public class InsertCarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_insert_car);
+
+        Toolbar toolbar = findViewById(R.id.toolbar_insert);
+        setSupportActionBar(toolbar);
+
        // FirebaseUtil.openFbReference("Vehicle", this);
         mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
@@ -68,7 +74,7 @@ public class InsertCarActivity extends AppCompatActivity {
         edtDescription = (EditText) findViewById(R.id.edt_model);
         edtPrice = (EditText) findViewById(R.id.edt_price);
         imageView = (ImageView) findViewById(R.id.imageUrl);
-        progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         Intent intent = getIntent();
         CarDeals deal = (CarDeals) intent.getSerializableExtra("Deal");
         if (deal==null) {
@@ -79,7 +85,7 @@ public class InsertCarActivity extends AppCompatActivity {
         edtDescription.setText(deal.getDescription());
         edtPrice.setText(deal.getPrice());
         showImage(deal.getImageUrl());
-        Button btnImage = findViewById(R.id.btnImage);
+        btnImage = findViewById(R.id.btnImage);
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,19 +110,19 @@ public class InsertCarActivity extends AppCompatActivity {
             final StorageReference firememeRef = FirebaseUtil.mStorageRef.child(imageUri.getLastPathSegment());
 
             UploadTask uploadTask = firememeRef.putFile(imageUri);
-
+            mProgressBar.setVisibility(View.VISIBLE);
+          /*  Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mProgressBar.setProgress(0);
+                }
+            }, 50);*/
             uploadTask.addOnCompleteListener(this, new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> taskSnapshot) {
                     Log.d(LOG_DATA,  "Upload Task Complete with no doubt " );
-
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                        progressBar.setProgress(0);
-                        }
-                    }, 100);
+                    mProgressBar.setVisibility(View.GONE);
 
                  //   String pictureName = taskSnapshot.getStorage().getPath();
                 }
@@ -130,7 +136,7 @@ public class InsertCarActivity extends AppCompatActivity {
                 public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                     double progress = (100.0 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
                     Log.d(LOG_DATA, "The total count is: "+ progress);
-                    progressBar.setProgress((int) progress);
+                    mProgressBar.setProgress((int) progress);
                 }
             });
 
@@ -192,10 +198,9 @@ public class InsertCarActivity extends AppCompatActivity {
             int width = Resources.getSystem().getDisplayMetrics().widthPixels;
            Picasso.with(this)
                     .load(url)
-                   // .resize(width, width*2/3)
-                   .resize(50, 50)
-                    .centerCrop()
-                   .placeholder(R.drawable.fail_image)
+                   .resize(width, width*2/3)
+                   .centerCrop()
+                 //  .placeholder(R.drawable.fail_image)
                    .error(R.drawable.fail_image)
                     .into(imageView);
         }
@@ -209,11 +214,13 @@ public class InsertCarActivity extends AppCompatActivity {
         if (FirebaseUtil.isAdmin) {
             menu.findItem(R.id.delete_menu).setVisible(true);
             menu.findItem(R.id.save_menu).setVisible(true);
+            btnImage.setVisibility(View.VISIBLE);
             enableEditTexts(true);
         }
         else {
             menu.findItem(R.id.delete_menu).setVisible(false);
             menu.findItem(R.id.save_menu).setVisible(false);
+            btnImage.setVisibility(View.GONE);
             enableEditTexts(false);
         }
         return true;
