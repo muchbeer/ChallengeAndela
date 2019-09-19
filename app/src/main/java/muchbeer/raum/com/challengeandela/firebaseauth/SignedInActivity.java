@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,14 +20,21 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
 import muchbeer.raum.com.challengeandela.R;
 import muchbeer.raum.com.challengeandela.chatroom.ChatActivity;
+import muchbeer.raum.com.challengeandela.messagefirebase.AdminActivity;
+import muchbeer.raum.com.challengeandela.models.Users;
 import muchbeer.raum.com.challengeandela.utility.FirebaseUtil;
 import muchbeer.raum.com.challengeandela.utility.UniversalImageLoader;
 
@@ -42,6 +50,7 @@ public class SignedInActivity extends AppCompatActivity {
 
     // widgets and UI References
 
+    private Boolean mIsAdmin = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +67,11 @@ public class SignedInActivity extends AppCompatActivity {
         setUserDetails();
         initFCM();
         initImageLoader();
+        isAdmin();
+
+        //If you want to subscribe to a topic for you to send messages
+
+       // FirebaseMessaging.getInstance().subscribeToTopic("muchbeer");
     }
 
     private void initImageLoader() {
@@ -80,6 +94,17 @@ public class SignedInActivity extends AppCompatActivity {
     }
 
     public void sendRegistrationToserver(String token) {
+
+        Log.d(TAG, "sendRegistrationToServer: sending token to server: " + token);
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        mDatabaseReference = FirebaseUtil.mDatabaseReference;
+        reference.child(getString(R.string.dbnode_users))
+                .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                .child(getString(R.string.field_messaging_token))
+                .setValue(token);
+
+    }
+    public void sendRegistrationToserver2(String token) {
 
         Log.d(TAG, "sendRegistrationToServer: sending token to server: " + token);
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
@@ -181,6 +206,39 @@ public class SignedInActivity extends AppCompatActivity {
         }
     }
 
+    private void isAdmin(){
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        Query query = reference.child(getString(R.string.dbnode_users))
+                .orderByChild(getString(R.string.field_user_id))
+                .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            private String securityLeveling;
+
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "onDataChange: datasnapshot: " + dataSnapshot);
+
+                           //    DataSnapshot singleSnapshot = dataSnapshot.getChildren().iterator().next();
+
+                for(DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                    Users user = snapshot.getValue(Users.class);
+                  securityLeveling = user.getSecurity_level();
+                   Log.d(TAG, "onDataChange: The security level is:" + user.getSecurity_level());
+                   int securityLevel = Integer.parseInt(securityLeveling);
+                  if (securityLevel == 8) {
+                        Log.d(TAG, "onDataChange: user is an admin.");
+                        mIsAdmin = true;
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -208,6 +266,17 @@ public class SignedInActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
 
+            case R.id.optionAdmin:
+                intent = new Intent(SignedInActivity.this, AdminActivity.class);
+                startActivity(intent);
+             /*   if(mIsAdmin){
+                    intent = new Intent(SignedInActivity.this, AdminActivity.class);
+                    startActivity(intent);
+                }else{
+                    Toast.makeText(this, "You're not an Admin", Toast.LENGTH_SHORT).show();
+                }*/
+
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

@@ -30,7 +30,7 @@ import static android.text.TextUtils.isEmpty;
 public class Register_User extends AppCompatActivity {
     private static final String TAG = Register_User.class.getSimpleName();
 
-    private static final String DOMAIN_NAME = "gmail.com";
+   private static final String DOMAIN_NAME = "gmail.com";
 
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
@@ -102,7 +102,7 @@ public class Register_User extends AppCompatActivity {
                             //insert some default data
                             Users user = new Users();
                             user.setName(email.substring(0, email.indexOf("@")));
-                            user.setPhone("255");
+                            user.setPhone("255757087");
                             user.setProfile_image("");
                             user.setSecurity_level("8");
                             user.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid());
@@ -155,14 +155,14 @@ public class Register_User extends AppCompatActivity {
      * @param email
      * @return
      */
-    private boolean isValidDomain(String email){
+    private boolean isValidDomain2(String email){
         Log.d(TAG, "isValidDomain: verifying email has correct domain: " + email);
         String domain = email.substring(email.indexOf("@") + 1).toLowerCase();
         Log.d(TAG, "isValidDomain: users domain: " + domain);
         return domain.equals(DOMAIN_NAME);
     }
 
-    /**
+    /**2
      * Redirects the user to the login screen
      */
     private void redirectLoginScreen(){

@@ -12,7 +12,8 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".chatroom.ChatRoomActivity"></activity>
+        <activity android:name=".messagefirebase.AdminActivity"></activity>
+        <activity android:name=".chatroom.ChatRoomActivity" />
         <activity android:name=".chatroom.ChatActivity" />
         <activity android:name=".firebaseauth.Register_User" />
         <activity android:name=".firebaseauth.LoginActivity">
@@ -36,10 +37,10 @@
             </intent-filter>
         </service>
     </application>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET" />
-
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
 </manifest>

@@ -7,13 +7,21 @@ public class Users {
     private String profile_image;
     private String user_id;
     private String security_level;
+    private String messaging_token;
+    private String department;
 
-    public Users(String name, String phone, String profile_image, String user_id, String security_level) {
+
+
+
+    public Users(String name, String phone, String profile_image, String user_id,
+                 String security_level,  String messaging_token, String department) {
         this.name = name;
         this.phone = phone;
         this.profile_image = profile_image;
         this.user_id = user_id;
         this.security_level = security_level;
+        this.messaging_token = messaging_token;
+        this.department = department;
     }
 
     public Users() {
@@ -59,6 +67,22 @@ public class Users {
     public void setProfile_image(String profile_image) {
         this.profile_image = profile_image;
     }
+    public String getMessaging_token() {
+        return messaging_token;
+    }
+
+    public void setMessaging_token(String messaging_token) {
+        this.messaging_token = messaging_token;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
 
     @Override
     public String toString() {
@@ -68,6 +92,8 @@ public class Users {
                 ", profile_image='" + profile_image + '\'' +
                 ", user_id='" + user_id + '\'' +
                 ", security_level='" + security_level + '\'' +
+                ", messaging_token='" + messaging_token + '\'' +
+                ", department='" + department + '\'' +
                 '}';
     }
 }

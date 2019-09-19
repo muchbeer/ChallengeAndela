@@ -156,12 +156,15 @@ init();
                 .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         query1.addListenerForSingleValueEvent(new ValueEventListener() {
+            private long sPhone;
+
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 for(DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
                     Users user = singleSnapshot.getValue(Users.class);
                     Log.d(TAG, "onDataChange: (QUERY METHOD 2) found user: " + user.toString());
 
+                 //   sPhone = user.getPhone();
                     mName.setText(user.getName());
                     mPhone.setText(user.getPhone());
 
@@ -188,6 +191,7 @@ init();
                 for(DataSnapshot singleSnapshot : dataSnapshot.getChildren()){
                     Users user = singleSnapshot.getValue(Users.class);
                     Log.d(TAG, "onDataChange: (QUERY METHOD 2) found user: " + user.toString());
+
 
                     mName.setText(user.getName());
                     mPhone.setText(user.getPhone());
