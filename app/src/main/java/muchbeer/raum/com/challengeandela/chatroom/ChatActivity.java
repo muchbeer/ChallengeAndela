@@ -30,6 +30,7 @@ import muchbeer.raum.com.challengeandela.utility.NewChatRoomDialog;
 public class ChatActivity extends AppCompatActivity {
     private static final String TAG =ChatActivity.class.getSimpleName();
 
+    public static boolean isActivityRunning;
     //widgets
     private ListView mListView;
     private FloatingActionButton mFob;
@@ -138,5 +139,17 @@ public class ChatActivity extends AppCompatActivity {
         args.putString(getString(R.string.field_chatroom_id), chatroomId);
         dialog.setArguments(args);
         dialog.show(getSupportFragmentManager(), getString(R.string.dialog_delete_chatroom));
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        isActivityRunning = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isActivityRunning=false;
     }
 }

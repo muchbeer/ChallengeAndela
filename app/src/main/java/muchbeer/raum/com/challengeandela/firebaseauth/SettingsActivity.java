@@ -69,6 +69,7 @@ public class SettingsActivity extends AppCompatActivity implements OnPhotoReceiv
     //firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
 
+    public static boolean isActivityRunning;
     //widgets
     private EditText mEmail, mCurrentPassword, mName, mPhone;
     private ImageView mProfileImage;
@@ -836,12 +837,14 @@ init();
     @Override
     public void onStart() {
         super.onStart();
+        isActivityRunning = true;
         FirebaseAuth.getInstance().addAuthStateListener(mAuthListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        isActivityRunning=false;
         if (mAuthListener != null) {
             FirebaseAuth.getInstance().removeAuthStateListener(mAuthListener);
         }

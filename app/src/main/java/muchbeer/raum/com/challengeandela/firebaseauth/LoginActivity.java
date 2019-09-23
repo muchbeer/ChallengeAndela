@@ -29,6 +29,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
 
+    public static boolean isActivityRunning;
     //Firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
 
@@ -181,12 +182,15 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
+        //vars
+        isActivityRunning = true;
         FirebaseAuth.getInstance().addAuthStateListener(mAuthListener);
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        isActivityRunning = false;
         if (mAuthListener != null) {
             FirebaseAuth.getInstance().removeAuthStateListener(mAuthListener);
         }

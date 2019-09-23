@@ -39,7 +39,10 @@ import muchbeer.raum.com.challengeandela.models.Users;
 import muchbeer.raum.com.challengeandela.utility.ChatMessageListAdapter;
 
 public class ChatRoomActivity extends AppCompatActivity {
-    private static final String TAG = "ChatroomActivity";
+    private static final String TAG = ChatRoomActivity.class.getSimpleName();
+
+    //vars
+    public static boolean isActivityRunning;
 
     //firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -332,11 +335,14 @@ public class ChatRoomActivity extends AppCompatActivity {
     public void onStart() {
         super.onStart();
         FirebaseAuth.getInstance().addAuthStateListener(mAuthListener);
+        //vars
+        isActivityRunning = true;
     }
 
     @Override
     public void onStop() {
         super.onStop();
+        isActivityRunning = false;
         if (mAuthListener != null) {
             FirebaseAuth.getInstance().removeAuthStateListener(mAuthListener);
         }

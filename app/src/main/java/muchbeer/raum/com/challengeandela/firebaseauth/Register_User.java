@@ -30,6 +30,7 @@ import static android.text.TextUtils.isEmpty;
 public class Register_User extends AppCompatActivity {
     private static final String TAG = Register_User.class.getSimpleName();
 
+    public static boolean isActivityRunning;
    private static final String DOMAIN_NAME = "gmail.com";
 
     private FirebaseDatabase mFirebaseDatabase;
@@ -230,4 +231,15 @@ public class Register_User extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        isActivityRunning = true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        isActivityRunning = false;
+    }
 }

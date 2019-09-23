@@ -33,7 +33,9 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 import muchbeer.raum.com.challengeandela.R;
 import muchbeer.raum.com.challengeandela.chatroom.ChatActivity;
+import muchbeer.raum.com.challengeandela.chatroom.ChatRoomActivity;
 import muchbeer.raum.com.challengeandela.messagefirebase.AdminActivity;
+import muchbeer.raum.com.challengeandela.models.ChatRoom;
 import muchbeer.raum.com.challengeandela.models.Users;
 import muchbeer.raum.com.challengeandela.utility.FirebaseUtil;
 import muchbeer.raum.com.challengeandela.utility.UniversalImageLoader;
@@ -41,8 +43,10 @@ import muchbeer.raum.com.challengeandela.utility.UniversalImageLoader;
 public class SignedInActivity extends AppCompatActivity {
 
 
-    private static final String TAG = "SignedInActivity";
+    private static final String TAG = SignedInActivity.class.getSimpleName();
 
+    //vars
+    public static boolean isActivityRunning;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     //Firebase
@@ -67,12 +71,31 @@ public class SignedInActivity extends AppCompatActivity {
         setUserDetails();
         initFCM();
         initImageLoader();
-        isAdmin();
+       // isAdmin();
 
+        getPendingIntent();
         //If you want to subscribe to a topic for you to send messages
 
        // FirebaseMessaging.getInstance().subscribeToTopic("muchbeer");
     }
+
+    //get intent plus detail from MyFirebaseMessagingService
+    private void getPendingIntent(){
+        Log.d(TAG, "getPendingIntent: checking for pending intents.");
+
+        Intent intent = getIntent();
+        if(intent.hasExtra(getString(R.string.intent_chatroom))){
+            Log.d(TAG, "getPendingIntent: pending intent detected.");
+
+            //get the chatroom
+            ChatRoom chatroom = intent.getParcelableExtra(getString(R.string.intent_chatroom));
+            //navigate to the chatoom
+            Intent chatroomIntent = new Intent(SignedInActivity.this, ChatRoomActivity.class);
+            chatroomIntent.putExtra(getString(R.string.intent_chatroom), chatroom);
+            startActivity(chatroomIntent);
+        }
+    }
+
 
     private void initImageLoader() {
         UniversalImageLoader imageLoader = new UniversalImageLoader(SignedInActivity.this);
@@ -293,11 +316,13 @@ public class SignedInActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         FirebaseAuth.getInstance().addAuthStateListener(mAuthListener);
+        isActivityRunning = true;
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        isActivityRunning = false;
         if (mAuthListener != null) {
             FirebaseAuth.getInstance().removeAuthStateListener(mAuthListener);
         }
