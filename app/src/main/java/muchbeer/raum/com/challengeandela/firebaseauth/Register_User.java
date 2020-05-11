@@ -146,7 +146,6 @@ public class Register_User extends AppCompatActivity {
                         }
                         hideDialog();
 
-                        // ...
                     }
                 });
     }

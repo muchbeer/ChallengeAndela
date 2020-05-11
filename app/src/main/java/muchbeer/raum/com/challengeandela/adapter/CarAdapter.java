@@ -133,7 +133,7 @@ public class CarAdapter extends RecyclerView.Adapter<CarAdapter.CarViewHolder> {
         private void showImage(String url) {
             if (url != null && url.isEmpty()==false) {
                 Log.d(LOG_TAG, "If you can see image then meaning you can access this view: "+url);
-                Picasso.with(imageDeal.getContext())
+                Picasso.get()
                         .load(url)
                         .resize(160, 160)
                         .centerCrop()

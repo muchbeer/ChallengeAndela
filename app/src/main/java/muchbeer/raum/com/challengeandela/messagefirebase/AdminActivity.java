@@ -1,5 +1,6 @@
 package muchbeer.raum.com.challengeandela.messagefirebase;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -18,12 +19,21 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +45,7 @@ import muchbeer.raum.com.challengeandela.adapter.EmployeesAdapter;
 import muchbeer.raum.com.challengeandela.dialog.NewDepartmentDialog;
 import muchbeer.raum.com.challengeandela.fcm.Data;
 import muchbeer.raum.com.challengeandela.fcm.FirebaseCloudMessage;
+import muchbeer.raum.com.challengeandela.models.ServerKey;
 import muchbeer.raum.com.challengeandela.models.Users;
 import muchbeer.raum.com.challengeandela.utility.FCM;
 import muchbeer.raum.com.challengeandela.utility.VerticalSpacingDecorator;
@@ -66,6 +77,11 @@ public class AdminActivity extends AppCompatActivity {
     private Set<String> mTokens;
     private String mServerKey;
     public static boolean isActivityRunning;
+
+    //firebase correction
+    private FirebaseFirestore mDb;
+    private CollectionReference serverRef, newsRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -231,11 +247,7 @@ public class AdminActivity extends AppCompatActivity {
             firebaseCloudMessage.setData(data);
             firebaseCloudMessage.setTo(token);
 
-//Replace setTo(token) to
-//firebaseCloudMessage.setTo("/topics/muchbeer");
-//then remove for loop
-
-Log.d(TAG, "The required headers which is the most true : "+ headers);
+            Log.d(TAG, "The required headers which is the most true : "+ headers);
             Call<ResponseBody> call = fcmAPI.send(headers, firebaseCloudMessage);
 
             call.enqueue(new Callback<ResponseBody>() {
@@ -259,30 +271,31 @@ Log.d(TAG, "The required headers which is the most true : "+ headers);
      */
     private void getServerKey(){
         Log.d(TAG, "getServerKey: retrieving server key.");
+        Query locationQuery = null;
+        mDb = FirebaseFirestore.getInstance();
+        serverRef = mDb
+                .collection("server");
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-
-        Query query = reference.child(getString(R.string.dbnode_server));
-
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
+        serverRef.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: got the server key.");
-             //   DataSnapshot singleSnapshot = dataSnapshot.getChildren().iterator().next();
-                for(DataSnapshot snapshot: dataSnapshot.getChildren()){
-                    mServerKey = snapshot.getValue().toString();
-                    Log.d(TAG, "onDataChange: found a server: " + mServerKey);
-
+            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "onDataChange: got the server key.");
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                      //  mServerKey = document.getData().toString();
+                        mServerKey = document.toObject(ServerKey.class).getServer_key();
+                        Log.d(TAG, "onDataChange: found a server: " + mServerKey);
+                    }
                 }
-
-                Log.d(TAG, "The firebase server is : "+ mServerKey);
             }
-
+        }).addOnFailureListener(new OnFailureListener() {
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "The main issue here is: " + e);
 
             }
         });
+
     }
 
     /**
@@ -300,6 +313,7 @@ Log.d(TAG, "The required headers which is the most true : "+ headers);
                     .orderByChild(getString(R.string.field_department))
                     .equalTo(department);
 
+
             query.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -308,6 +322,7 @@ Log.d(TAG, "The required headers which is the most true : "+ headers);
                         Log.d(TAG, "onDataChange: got a token for user named: "
                                 + snapshot.getValue(Users.class).getName());
                         mTokens.add(token);
+                        Log.d(TAG, "The tokens are: " + mTokens);
                     }
                 }
 

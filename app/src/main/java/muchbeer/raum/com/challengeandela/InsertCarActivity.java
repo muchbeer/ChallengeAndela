@@ -196,7 +196,7 @@ public class InsertCarActivity extends AppCompatActivity {
         if (url != null && url.isEmpty() == false) {
             Log.d(LOG_DATA, "The url that is giving hard time is:  "+ url);
             int width = Resources.getSystem().getDisplayMetrics().widthPixels;
-           Picasso.with(this)
+           Picasso.get()
                     .load(url)
                    .resize(width, width*2/3)
                    .centerCrop()

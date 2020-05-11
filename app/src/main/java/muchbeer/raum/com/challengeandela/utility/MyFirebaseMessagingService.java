@@ -1,15 +1,20 @@
 package muchbeer.raum.com.challengeandela.utility;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.RingtoneManager;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,6 +51,13 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private int mNumPendingMessages = 0;
     private DatabaseReference mDatabaseReference;
 
+    // Notification channel ID.
+    private static final String PRIMARY_CHANNEL_ID =
+            "primary_notification_channel";
+    // Notification manager.
+    public static final String NOTIFICATION_CHANNEL_ID = "channel_id";
+
+    NotificationManager mNotifyManager;
 
     @Override
     public void onNewToken(@NonNull String s) {
@@ -112,10 +124,12 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 //build admin broadcast notification
                 String title = remoteMessage.getData().get(getString(R.string.data_title));
                 String message = remoteMessage.getData().get(getString(R.string.data_message));
+                String data = remoteMessage.getData().get("data_type_admin_broadcast");
 
                 sendBroadcastNotification(title, message);
                 Log.d(LOG_TAG, "Title to be send is: " + title);
                 Log.d(LOG_TAG, "message to be received is : " + message);
+                Log.d(LOG_TAG, "tHE data received: " + data);
 
             } else if (identifyDataType.equals(getString(R.string.data_type_chat_message))) {
 
@@ -246,15 +260,15 @@ notificationTitle = remoteMessage.getNotification().getTitle();
     private void sendBroadcastNotification(String title, String message){
         Log.d(LOG_TAG, "sendBroadcastNotification: building a admin broadcast notification");
 
+        createNotificationChannel();
 
-        // Instantiate a Builder object.
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,
-                getString(R.string.default_notification_channel_name));
-        // Creates an Intent for the Activity
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         Intent notifyIntent = new Intent(this, SignedInActivity.class);
+
         // Sets the Activity to start in a new, empty task
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        // Creates the PendingIntent
+
         PendingIntent notifyPendingIntent =
                 PendingIntent.getActivity(
                         this,
@@ -264,21 +278,20 @@ notificationTitle = remoteMessage.getNotification().getTitle();
                 );
 
         //add properties to the builder
-        builder.setSmallIcon(R.drawable.tabian_consulting_logo)
-                .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(),
-                        R.drawable.tabian_consulting_logo))
-                .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
-                .setContentTitle(title)
+        builder.setContentTitle(title)
                 .setContentText(message)
+                .setSmallIcon(R.drawable.tabian_consulting_logo)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.tabian_consulting_logo))
                 .setColor(getColor(R.color.blue4))
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(notifyPendingIntent);
 
-        builder.setContentIntent(notifyPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification notification = builder.build();
 
-        mNotificationManager.notify(BROADCAST_NOTIFICATION_ID, builder.build());
+        NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(this);
 
+        mNotificationManager.notify(BROADCAST_NOTIFICATION_ID, notification);
     }
 
     /**
@@ -289,12 +302,12 @@ notificationTitle = remoteMessage.getNotification().getTitle();
     private void sendChatmessageNotification(String title, String message, ChatRoom chatroom){
         Log.d(LOG_TAG, "sendChatmessageNotification: building a chatmessage notification");
 
+        createNotificationChannel();
         //get the notification id
         int notificationId = buildNotificationId(chatroom.getChatroom_id());
 
         // Instantiate a Builder object.
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this,
-                getString(R.string.default_notification_channel_name));
+        Notification.Builder builder = new Notification.Builder(this);
         // Creates an Intent for the Activity
         Intent pendingIntent = new Intent(this, SignedInActivity.class);
         // Sets the Activity to start in a new, empty task
@@ -319,7 +332,7 @@ notificationTitle = remoteMessage.getNotification().getTitle();
                 .setColor(getColor(R.color.blue4))
                 .setAutoCancel(true)
                 .setSubText(message)
-                .setStyle(new NotificationCompat.BigTextStyle()
+                .setStyle(new Notification.BigTextStyle()
                         .bigText("New messages in " + chatroom.getChatroom_name()).setSummaryText(message))
                 .setNumber(mNumPendingMessages)
                 .setOnlyAlertOnce(true);
@@ -350,6 +363,24 @@ notificationTitle = remoteMessage.getNotification().getTitle();
 
         notificationManager.notify(0, notificationBuilder.build());
 
+    }
+
+    /**
+     * Creates a Notification channel, for OREO and higher.
+     */
+    public void createNotificationChannel() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            CharSequence name = "ccmChannel";
+            String description = "This notification is for campaign";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+
+        }
     }
     @Override
     public void onDeletedMessages() {

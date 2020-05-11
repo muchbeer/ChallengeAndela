@@ -90,4 +90,6 @@
     <string name="data_chatroom_id">chatroom_id</string>
     <string name="reply_label">intent_data_payload</string>
     <string name="label">new message...</string>
+    <string name="chat_service_notification">CCM uchaguzi</string>
+    <string name="notification_channel_description">Notification from Wabunge</string>
 </resources>
