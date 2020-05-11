@@ -303,17 +303,15 @@ notificationTitle = remoteMessage.getNotification().getTitle();
         Log.d(LOG_TAG, "sendChatmessageNotification: building a chatmessage notification");
 
         createNotificationChannel();
-        //get the notification id
+
         int notificationId = buildNotificationId(chatroom.getChatroom_id());
 
-        // Instantiate a Builder object.
-        Notification.Builder builder = new Notification.Builder(this);
-        // Creates an Intent for the Activity
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+
         Intent pendingIntent = new Intent(this, SignedInActivity.class);
-        // Sets the Activity to start in a new, empty task
         pendingIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         pendingIntent.putExtra(getString(R.string.intent_chatroom), chatroom);
-        // Creates the PendingIntent
+
         PendingIntent notifyPendingIntent =
                 PendingIntent.getActivity(
                         this,
@@ -332,21 +330,16 @@ notificationTitle = remoteMessage.getNotification().getTitle();
                 .setColor(getColor(R.color.blue4))
                 .setAutoCancel(true)
                 .setSubText(message)
-                .setStyle(new Notification.BigTextStyle()
+                .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText("New messages in " + chatroom.getChatroom_name()).setSummaryText(message))
                 .setNumber(mNumPendingMessages)
-                .setOnlyAlertOnce(true);
+                .setOnlyAlertOnce(true)
+                .setContentIntent(notifyPendingIntent);
 
-        builder.setContentIntent(notifyPendingIntent);
-        NotificationManager mNotificationManager =
-                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        mNotificationManager.notify(notificationId, builder.build());
-
-        //add properties to the builder
-
-
-    }
+        Notification notification = builder.build();
+        NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(this);
+        mNotificationManager.notify(BROADCAST_NOTIFICATION_ID, notification);
+   }
     public void showNotification(String title, String message) {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, "channel_id")
