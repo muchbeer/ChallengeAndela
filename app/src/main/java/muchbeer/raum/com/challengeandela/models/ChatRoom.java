@@ -3,6 +3,8 @@ package muchbeer.raum.com.challengeandela.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.firebase.ui.auth.data.model.User;
+
 import java.util.List;
 
 public class ChatRoom implements Parcelable {
@@ -13,6 +15,17 @@ public class ChatRoom implements Parcelable {
     private String security_level;
     private String chatroom_id;
     private List<ChatMessage> chatroom_messages;
+    private List<Users> users;
+
+
+    public List<Users> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<Users> users) {
+        this.users = users;
+    }
+
 
     public ChatRoom(String chatroom_name, String creator_id, String security_level, String chatroom_id, List<ChatMessage> chatroom_messages) {
         this.chatroom_name = chatroom_name;

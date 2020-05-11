@@ -42,6 +42,9 @@ import muchbeer.raum.com.challengeandela.firebaseauth.SettingsActivity;
 import muchbeer.raum.com.challengeandela.firebaseauth.SignedInActivity;
 import muchbeer.raum.com.challengeandela.messagefirebase.AdminActivity;
 import muchbeer.raum.com.challengeandela.models.ChatRoom;
+import muchbeer.raum.com.challengeandela.models.LastSeen;
+import muchbeer.raum.com.challengeandela.models.ServerKey;
+import muchbeer.raum.com.challengeandela.models.Users;
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
@@ -165,26 +168,22 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                             chatroom.setCreator_id(objectMap.get(getString(R.string.field_creator_id)).toString());
                             chatroom.setSecurity_level(objectMap.get(getString(R.string.field_security_level)).toString());
 
-                            Log.d(LOG_TAG, "onDataChange using : chatroom: " + chatroom);
                             Log.d(LOG_TAG, "onDataChange using : HashObject Map: " + objectMap);
 
-                            int numMessagesSeen = Integer.parseInt(snapshot
-                                    .child(getString(R.string.field_users))
-                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .child(getString(R.string.field_last_message_seen))
-                                    .getValue().toString());
+                            int numMessagesSeen = Integer.parseInt(snapshot.child("users")
+                                    .child(objectMap.get(getString(R.string.field_creator_id)).toString())
+                                    .child(getString(R.string.field_last_message_seen)).getValue().toString());
+
+                            Log.d(LOG_TAG, "Use snapshot to read lastseen: " + numMessagesSeen);
 
                             int numMessages = (int) snapshot
                                     .child(getString(R.string.field_chatroom_messages)).getChildrenCount();
 
                             mNumPendingMessages = (numMessages - numMessagesSeen);
-                            Log.d(LOG_TAG, "onDataChange: num pending messages: " + mNumPendingMessages);
 
-
-                            sendChatmessageNotification(title, message, chatroom);
+                  sendChatmessageNotification(title, message, chatroom);
                         }
-
-                    }
+                 }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
