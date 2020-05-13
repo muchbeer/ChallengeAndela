@@ -6,19 +6,30 @@
     android:layout_height="match_parent"
     tools:context=".chatroom.ChatActivity">
 
-
-    <FrameLayout
+    <com.facebook.shimmer.ShimmerFrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/container">
+        android:id="@+id/loadContainer">
 
-    </FrameLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    <ListView
+            <include layout="@layout/chatroomies_place_holder_item" />
+            <include layout="@layout/chatroomies_place_holder_item" />
+            <include layout="@layout/chatroomies_place_holder_item" />
+            <include layout="@layout/chatroomies_place_holder_item" />
+        </LinearLayout>
+
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/listView"
-        android:divider="@null"/>
+        android:id="@+id/recyclerView"
+       />
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

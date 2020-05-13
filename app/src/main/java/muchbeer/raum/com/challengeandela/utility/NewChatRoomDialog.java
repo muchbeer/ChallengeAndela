@@ -47,6 +47,7 @@ public class NewChatRoomDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         View view = getActivity().getLayoutInflater().inflate(R.layout.dialog_new_chatroom, container, false);
         mChatroomName = (EditText) view.findViewById(R.id.input_chatroom_name);
         mSeekBar = (SeekBar) view.findViewById(R.id.input_security_level);
@@ -61,9 +62,7 @@ public class NewChatRoomDialog extends DialogFragment {
             public void onClick(View v) {
                 if(!mChatroomName.getText().toString().equals("")){
                     Log.d(TAG, "onClick: creating new chat room");
-
-
-                    if(mUserSecurityLevel >= mSeekBar.getProgress()){
+                if(mUserSecurityLevel >= mSeekBar.getProgress()){
 
                         Log.d(TAG, "Satisfy the fully condition");
 
@@ -81,7 +80,6 @@ public class NewChatRoomDialog extends DialogFragment {
                         chatroom.setChatroom_name(mChatroomName.getText().toString());
                         chatroom.setCreator_id(FirebaseAuth.getInstance().getCurrentUser().getUid());
                         chatroom.setChatroom_id(chatroomId);
-
 
                         //insert the new chatroom into the database
                         reference

@@ -28,12 +28,11 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.InstanceIdResult;
-import com.google.firebase.messaging.FirebaseMessaging;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
-import java.util.ArrayList;
 
 import muchbeer.raum.com.challengeandela.R;
+import muchbeer.raum.com.challengeandela.adapter.ChatAdapter;
 import muchbeer.raum.com.challengeandela.chatroom.ChatActivity;
 import muchbeer.raum.com.challengeandela.chatroom.ChatRoomActivity;
 import muchbeer.raum.com.challengeandela.messagefirebase.AdminActivity;
@@ -47,14 +46,11 @@ public class SignedInActivity extends AppCompatActivity {
 
     private static final String TAG = SignedInActivity.class.getSimpleName();
 
-    //vars
     public static boolean isActivityRunning;
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     //Firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
-
-    // widgets and UI References
 
     private Boolean mIsAdmin = false;
     @Override
