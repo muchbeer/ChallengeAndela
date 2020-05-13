@@ -36,7 +36,7 @@ public class Register_User extends AppCompatActivity {
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     //widgets
-    private EditText mEmail, mPassword, mConfirmPassword;
+    private EditText mEmail,mUsername, mPhoneNumber, mPassword, mConfirmPassword;
     private Button mRegister;
     private ProgressBar mProgressBar;
 
@@ -47,6 +47,8 @@ public class Register_User extends AppCompatActivity {
         setContentView(R.layout.activity_register__user);
 
         mEmail = (EditText) findViewById(R.id.input_email);
+        mUsername = findViewById(R.id.input_username);
+        mPhoneNumber = findViewById(R.id.input_phonenumber);
         mPassword = (EditText) findViewById(R.id.input_password);
         mConfirmPassword = (EditText) findViewById(R.id.input_confirm_password);
         mRegister = (Button) findViewById(R.id.btn_register);
@@ -62,14 +64,10 @@ public class Register_User extends AppCompatActivity {
                         && !isEmpty(mPassword.getText().toString())
                         && !isEmpty(mConfirmPassword.getText().toString())){
 
-                    //check if user has a company email address
-                  //  if(isValidDomain(mEmail.getText().toString())){
-
-                        //check if passwords match
                         if(doStringsMatch(mPassword.getText().toString(), mConfirmPassword.getText().toString())){
 
-                            //Initiate registration task
-                            registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString());
+         registerNewEmail(mEmail.getText().toString(), mPassword.getText().toString(),
+                                    mPhoneNumber.getText().toString(), mUsername.getText().toString());
                         }else{
                             Toast.makeText(Register_User.this, "Passwords do not Match", Toast.LENGTH_SHORT).show();
                         }
@@ -84,7 +82,8 @@ public class Register_User extends AppCompatActivity {
         hideSoftKeyboard();
     }
 
-    private void registerNewEmail(final String email, String password) {
+    private void registerNewEmail(final String email, String password, final String phoneNumber,
+                                            final String username) {
         showDialog();
 
         FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
@@ -95,17 +94,16 @@ public class Register_User extends AppCompatActivity {
 
                         if (task.isSuccessful()){
                             Log.d(TAG, "onComplete: AuthState: " + FirebaseAuth.getInstance().getCurrentUser().getUid());
-
-
                             //send email verificaiton
                             sendVerificationEmail();
 
                             //insert some default data
                             Users user = new Users();
                             user.setName(email.substring(0, email.indexOf("@")));
-                            user.setPhone("255757087");
+                            user.setPhone(phoneNumber);
                             user.setProfile_image("");
                             user.setSecurity_level("8");
+                            user.setUsername(username);
                             user.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
                             FirebaseDatabase.getInstance().getReference()
@@ -131,14 +129,6 @@ public class Register_User extends AppCompatActivity {
                             });
 
 
-                          /*  FirebaseDatabase.getInstance().getReference()
-                                    .child(getString(R.string.dbnode_users))
-                                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
-                                    .setValue(user)*/
-                          //  FirebaseAuth.getInstance().signOut();
-
-                            //redirect the user to the login screen
-                          //  redirectLoginScreen();
                         }
                         if (!task.isSuccessful()) {
                             Toast.makeText(Register_User.this, "Unable to Register",

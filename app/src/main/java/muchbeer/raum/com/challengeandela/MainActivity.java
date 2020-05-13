@@ -36,7 +36,7 @@ import muchbeer.raum.com.challengeandela.utility.CarDeals;
 import muchbeer.raum.com.challengeandela.utility.FirebaseUtil;
 
 public class MainActivity extends AppCompatActivity {
-    ArrayList<CarDeals> deals;
+
     private FirebaseDatabase mFirebaseDatabase;
     private DatabaseReference mDatabaseReference;
     private ChildEventListener mChildListener;
@@ -65,41 +65,6 @@ public class MainActivity extends AppCompatActivity {
         else { fab.hide(); }
 
 
-  /*      mFirebaseDatabase = FirebaseUtil.mFirebaseDatabase;
-        mDatabaseReference = FirebaseUtil.mDatabaseReference;;
-*/
-       /* mChildListener = new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                TextView  txtShowCarName = (TextView) findViewById(R.id.tvCars);
-                CarDeals carList = dataSnapshot.getValue(CarDeals.class);
-                txtShowCarName.setText(txtShowCarName.getText()+ "\n" + carList.getCarName());
-
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        };
-*/
-       // mDatabaseReference.addChildEventListener(mChildListener);
     }
 
     @Override
@@ -111,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
 
         FirebaseUtil.openFbReference("Vehicle", this);
         RecyclerView rvDeals = (RecyclerView) findViewById(R.id.rv_all_cars);

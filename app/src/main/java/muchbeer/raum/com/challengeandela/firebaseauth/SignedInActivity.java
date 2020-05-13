@@ -31,6 +31,8 @@ import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import java.util.ArrayList;
+
 import muchbeer.raum.com.challengeandela.R;
 import muchbeer.raum.com.challengeandela.chatroom.ChatActivity;
 import muchbeer.raum.com.challengeandela.chatroom.ChatRoomActivity;
@@ -71,9 +73,9 @@ public class SignedInActivity extends AppCompatActivity {
         setUserDetails();
         initFCM();
         initImageLoader();
-       // isAdmin();
-
+        isAdmin();
         getPendingIntent();
+
 
     }
 
@@ -162,9 +164,7 @@ public class SignedInActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-
                 } else {
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                     Intent intent = new Intent(SignedInActivity.this, LoginActivity.class);
@@ -176,6 +176,7 @@ public class SignedInActivity extends AppCompatActivity {
             }
         };
     }
+
 
     @Override
     protected void onResume() {
@@ -194,9 +195,7 @@ public class SignedInActivity extends AppCompatActivity {
 
             String properties = "uid: " + uid + "  Name: "+ name;
             String photoPicture = photoUrl.toString();
-
         }
-
     }
     private void checkAuthenticationState() {
         Log.d(TAG, "checkAuthenticationState: checking authentication state.");
@@ -220,21 +219,20 @@ public class SignedInActivity extends AppCompatActivity {
         Query query = reference.child(getString(R.string.dbnode_users))
                 .orderByChild(getString(R.string.field_user_id))
                 .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            private String securityLeveling;
 
+
+        query.addListenerForSingleValueEvent(new ValueEventListener() {
+            String  securityLeveling;
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "onDataChange: datasnapshot: " + dataSnapshot);
 
-                           //    DataSnapshot singleSnapshot = dataSnapshot.getChildren().iterator().next();
-
-                for(DataSnapshot snapshot: dataSnapshot.getChildren()) {
+        for(DataSnapshot snapshot: dataSnapshot.getChildren()) {
                     Users user = snapshot.getValue(Users.class);
-                  securityLeveling = user.getSecurity_level();
+               securityLeveling = user.getSecurity_level();
                    Log.d(TAG, "onDataChange: The security level is:" + user.getSecurity_level());
                    int securityLevel = Integer.parseInt(securityLeveling);
-                  if (securityLevel == 8) {
+                  if (securityLevel == 10) {
                         Log.d(TAG, "onDataChange: user is an admin.");
                         mIsAdmin = true;
                     }
@@ -276,14 +274,13 @@ public class SignedInActivity extends AppCompatActivity {
                 return true;
 
             case R.id.optionAdmin:
-                intent = new Intent(SignedInActivity.this, AdminActivity.class);
-                startActivity(intent);
-             /*   if(mIsAdmin){
+
+                if(mIsAdmin){
                     intent = new Intent(SignedInActivity.this, AdminActivity.class);
                     startActivity(intent);
                 }else{
                     Toast.makeText(this, "You're not an Admin", Toast.LENGTH_SHORT).show();
-                }*/
+                }
 
                 return true;
             default:

@@ -28,12 +28,9 @@ import static android.text.TextUtils.isEmpty;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-
     public static boolean isActivityRunning;
-    //Firebase
     private FirebaseAuth.AuthStateListener mAuthListener;
 
-    // widgets
     private EditText mEmail, mPassword;
     private ProgressBar mProgressBar;
     @Override
@@ -45,12 +42,11 @@ public class LoginActivity extends AppCompatActivity {
         mPassword = (EditText) findViewById(R.id.password);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-
         setupFirebaseAuth();
 
         Button signIn = (Button) findViewById(R.id.email_sign_in_button);
 
-        signIn.setOnClickListener(new View.OnClickListener() {
+         signIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //check if the fields are filled out
@@ -60,8 +56,6 @@ public class LoginActivity extends AppCompatActivity {
 
                     showDialog();
 
-                  //  signingUser(username, password);
-
                     FirebaseAuth.getInstance().signInWithEmailAndPassword(mEmail.getText().toString(),
                             mPassword.getText().toString())
                             .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
@@ -69,8 +63,7 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onComplete(@NonNull Task<AuthResult> task) {
 
                                     hideDialog();
-
-                                }
+                                     }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
@@ -115,20 +108,12 @@ public class LoginActivity extends AppCompatActivity {
         hideSoftKeyboard();
     }
 
-    /**
-     * Return true if the @param is null
-     * @param string
-     * @return
-     */
     private boolean isEmpty(String string){
         return string.equals("");
     }
 
-
     private void showDialog(){
-        mProgressBar.setVisibility(View.VISIBLE);
-
-    }
+        mProgressBar.setVisibility(View.VISIBLE);   }
 
     private void hideDialog(){
         if(mProgressBar.getVisibility() == View.VISIBLE){
@@ -140,10 +125,6 @@ public class LoginActivity extends AppCompatActivity {
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
     }
 
-
-    /*
-        ----------------------------- Firebase setup ---------------------------------
-     */
     private void setupFirebaseAuth(){
         Log.d(TAG, "setupFirebaseAuth: started.");
 
@@ -174,10 +155,6 @@ public class LoginActivity extends AppCompatActivity {
         };
     }
 
-    private void signingUser(String username, String password) {
-
-
-    }
 
     @Override
     public void onStart() {
