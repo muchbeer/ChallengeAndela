@@ -2,7 +2,6 @@ package muchbeer.raum.com.challengeandela.chatroom;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -12,28 +11,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import muchbeer.raum.com.challengeandela.R;
 import muchbeer.raum.com.challengeandela.adapter.ChatAdapter;
 import muchbeer.raum.com.challengeandela.chatviewmodel.ChatViewModel;
 import muchbeer.raum.com.challengeandela.listener.ChatRecyclerClickListener;
 import muchbeer.raum.com.challengeandela.models.ChatRoom;
-import muchbeer.raum.com.challengeandela.utility.ChatroomListAdapter;
 import muchbeer.raum.com.challengeandela.utility.NewChatRoomDialog;
 
 public class ChatActivity extends AppCompatActivity implements ChatRecyclerClickListener{
@@ -46,7 +35,6 @@ public class ChatActivity extends AppCompatActivity implements ChatRecyclerClick
 
     private FloatingActionButton mFob;
     private ArrayList<ChatRoom> mChatrooms;
-    private ChatroomListAdapter mAdapter;
 
     private ChatAdapter mChatRecyclerAdapter;
     private ChatViewModel mainActivityViewModel;
@@ -55,7 +43,6 @@ public class ChatActivity extends AppCompatActivity implements ChatRecyclerClick
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
-        setContentView(R.layout.activity_chat);
         recyclerView = findViewById(R.id.recyclerView);
         mShimmerViewContainer = findViewById(R.id.loadContainer);
         mFob = findViewById(R.id.fob);
@@ -149,7 +136,7 @@ public class ChatActivity extends AppCompatActivity implements ChatRecyclerClick
 
     @Override
     public void click(ChatRoom chatposition) {
-        Log.d(TAG, "onItemClick: selected chatroom: " + chatposition.getChatroom_id());
+        Log.d(TAG, "onItemClick: selected chatroomID: " + chatposition.getChatroom_id());
         Intent intent = new Intent(ChatActivity.this, ChatRoomActivity.class);
         intent.putExtra(getString(R.string.intent_chatroom), chatposition);
         startActivity(intent);

@@ -3,15 +3,20 @@ package muchbeer.raum.com.challengeandela.chatroom;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,24 +29,20 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import muchbeer.raum.com.challengeandela.R;
+import muchbeer.raum.com.challengeandela.adapter.ChatMessageAdapter;
+import muchbeer.raum.com.challengeandela.chatviewmodel.ChatViewModel;
 import muchbeer.raum.com.challengeandela.firebaseauth.LoginActivity;
+import muchbeer.raum.com.challengeandela.listener.ChatMessageRecyclerClick;
 import muchbeer.raum.com.challengeandela.models.ChatMessage;
 import muchbeer.raum.com.challengeandela.models.ChatRoom;
 import muchbeer.raum.com.challengeandela.models.Users;
-import muchbeer.raum.com.challengeandela.utility.ChatMessageListAdapter;
 
-public class ChatRoomActivity extends AppCompatActivity {
+public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRecyclerClick {
     private static final String TAG = ChatRoomActivity.class.getSimpleName();
 
-    //vars
     public static boolean isActivityRunning;
 
     //firebase
@@ -50,34 +51,34 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     //widgets
     private TextView mChatroomName;
-    private ListView mListView;
+    private RecyclerView recyclerView;
     private EditText mMessage;
     private ImageView mCheckmark;
 
     //vars
     private ChatRoom mChatroom;
-    private List<ChatMessage> mMessagesList;
-    private ChatMessageListAdapter mAdapter;
-    @Override
+    private ArrayList<ChatMessage> mMessagesList;
+    private ChatMessageAdapter adapter;
+    private ChatViewModel mainActivityViewModel;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_room);
 
-      //  Toolbar toolbar = findViewById(R.id.toolbar);
-       // setSupportActionBar(toolbar);
+       Toolbar toolbar = findViewById(R.id.toolbar);
+       setSupportActionBar(toolbar);
 
+        mChatroomName = findViewById(R.id.text_chatroom_name);
+        recyclerView =  findViewById(R.id.recyclerView);
 
-        mChatroomName = (TextView) findViewById(R.id.text_chatroom_name);
-        mListView = (ListView) findViewById(R.id.listView);
-        mMessage = (EditText) findViewById(R.id.input_message);
-        mCheckmark = (ImageView) findViewById(R.id.checkmark);
-       // getSupportActionBar().hide();
-        Log.d(TAG, "onCreate: started.");
-        mMessagesList = new ArrayList<>();
+        mMessage =  findViewById(R.id.input_message);
+        mCheckmark =  findViewById(R.id.checkmark);
 
+        mainActivityViewModel = new ViewModelProvider(this).get(ChatViewModel.class);
         setupFirebaseAuth();
         getChatroom();
         init();
+
         hideSoftKeyboard();
     }
 
@@ -86,45 +87,22 @@ public class ChatRoomActivity extends AppCompatActivity {
         mMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mListView.setSelection(mAdapter.getCount() - 1); //scroll to the bottom of the list
-            }
+           //     recyclerView.getLayoutManager().scrollToPosition(adapter.getItemCount() -1);
+             }
         });
 
         mCheckmark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Log.d(TAG, "onClick: initiated");
                 if(!mMessage.getText().toString().equals("")){
                     String message = mMessage.getText().toString();
                     Log.d(TAG, "onClick: sending new message: " + message);
 
-                    //create the new message object for inserting
-                    ChatMessage newMessage = new ChatMessage();
-                    newMessage.setMessage(message);
-                    newMessage.setTimestamp(getTimestamp());
-                    newMessage.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
-                    //get a database reference
-                    DatabaseReference reference = FirebaseDatabase.getInstance().getReference()
-                            .child(getString(R.string.dbnode_chatrooms))
-                            .child(mChatroom.getChatroom_id())
-                            .child(getString(R.string.field_chatroom_messages));
-
-                    //create the new messages id
-                    String newMessageId = reference.push().getKey();
-                    Log.d(TAG, "NewMessageID is: " + newMessageId+ " theMessage is: " + newMessage);
-                    Toast.makeText(ChatRoomActivity.this, "message saved.", Toast.LENGTH_SHORT).show();
-                    //insert the new message into the chatroom
-                    reference
-                            .child(newMessageId)
-                            .setValue(newMessage);
-
-                    //clear the EditText
+                    mainActivityViewModel.createNewMessages(message, mChatroom.getChatroom_id());
                     mMessage.setText("");
-
-                    //refresh the messages list? Or is it done by the listener??
+                    getChatroomMessages();
                 }
-
             }
         });
     }
@@ -138,7 +116,7 @@ public class ChatRoomActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if(intent.hasExtra(getString(R.string.intent_chatroom))){
             ChatRoom chatroom = intent.getParcelableExtra(getString(R.string.intent_chatroom));
-            Log.d(TAG, "getChatroom: chatroom: " + chatroom.toString());
+            Log.d(TAG, "getChatroom: chatroom: " + chatroom.getChatroom_id());
             mChatroom = chatroom;
             mChatroomName.setText(mChatroom.getChatroom_name());
 
@@ -151,49 +129,38 @@ public class ChatRoomActivity extends AppCompatActivity {
         mMessagesList = new ArrayList<>();
         if(mMessagesList.size() > 0){
             mMessagesList.clear();
-            mAdapter.clear();
+
         }
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
-        Query query = reference.child(getString(R.string.dbnode_chatrooms))
-                .child(mChatroom.getChatroom_id())
-                .child(getString(R.string.field_chatroom_messages));
-        query.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                for(DataSnapshot singleSnapshot: dataSnapshot.getChildren()) {
+        Log.d(TAG, "getChatroomMessages: Method before LiveData");
+        mainActivityViewModel.getAllMessage(mChatroom.getChatroom_id()).observe(this, messages -> {
+            Log.d(TAG, "getChatroomMessages: found chatroom message: " + messages);
 
-                    DataSnapshot snapshot = singleSnapshot;
-                    Log.d(TAG, "onDataChange: found chatroom message: "
-                            + singleSnapshot.getValue());
-                    try {//need to catch null pointer here because the initial welcome message to the
-                        //chatroom has no user id
-                        ChatMessage message = new ChatMessage();
-                        String userId = snapshot.getValue(ChatMessage.class).getUser_id();
-                        if(userId != null){ //check and make sure it's not the first message (has no user id)
-                            message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
-                            message.setUser_id(snapshot.getValue(ChatMessage.class).getUser_id());
-                            message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
-                            mMessagesList.add(message);
-                        }else{
-                            message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
-                            message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
-                            mMessagesList.add(message);
-                        }
-
-                    } catch (NullPointerException e) {
-                        Log.e(TAG, "onDataChange: NullPointerException: " + e.getMessage());
-                    }
-                }
+            if(messages !=null) {
+                mMessagesList = (ArrayList) messages;
+                Log.d(TAG, "mMessageList from the livedata is: " + mMessagesList);
                 //query the users node to get the profile images and names
                 getUserDetails();
-                initMessagesList();
+
+                initMessageRecyclerView();
+
+            }else {
+                Log.d(TAG, "Error come is here: " );
             }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
         });
+      }
+
+    private void initMessageRecyclerView() {
+        Log.d(TAG, "received data from mMessageList is:  "+ mMessagesList );
+      adapter = new ChatMessageAdapter(this, mMessagesList, (ChatMessageRecyclerClick) this);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+            recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        recyclerView.setAdapter(adapter);
+        recyclerView.scrollToPosition(mMessagesList.size() - 1);
+        adapter.notifyDataSetChanged();
+
     }
 
     private void getUserDetails(){
@@ -213,7 +180,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                                 + singleSnapshot.getValue(Users.class).getUser_id());
                         mMessagesList.get(j).setProfile_image(singleSnapshot.getValue(Users.class).getProfile_image());
                         mMessagesList.get(j).setName(singleSnapshot.getValue(Users.class).getName());
-                        mAdapter.notifyDataSetChanged();
+                        adapter.notifyDataSetChanged();
                     }
 
                     @Override
@@ -224,24 +191,6 @@ public class ChatRoomActivity extends AppCompatActivity {
             }
         }
 
-    }
-
-
-    private void initMessagesList(){
-        mAdapter = new ChatMessageListAdapter(ChatRoomActivity.this,
-                R.layout.layout_chatmessage_listitem, mMessagesList);
-        mListView.setAdapter(mAdapter);
-        mListView.setSelection(mAdapter.getCount() - 1); //scroll to the bottom of the list
-    }
-
-    /**
-     * Return the current timestamp in the form of a string
-     * @return
-     */
-    private String getTimestamp(){
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
-        sdf.setTimeZone(TimeZone.getTimeZone("Canada/Pacific"));
-        return sdf.format(new Date());
     }
 
     private void hideSoftKeyboard(){
@@ -346,5 +295,10 @@ public class ChatRoomActivity extends AppCompatActivity {
         if (mAuthListener != null) {
             FirebaseAuth.getInstance().removeAuthStateListener(mAuthListener);
         }
+    }
+
+    @Override
+    public void click(ChatMessage message) {
+        Toast.makeText(getApplicationContext(), "The click message is: " + message, Toast.LENGTH_LONG).show();
     }
 }
