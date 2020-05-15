@@ -7,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 
 import java.util.List;
+import java.util.Set;
 
 import muchbeer.raum.com.challengeandela.models.ChatMessage;
 import muchbeer.raum.com.challengeandela.models.ChatRoom;
@@ -25,8 +26,8 @@ public class ChatViewModel extends AndroidViewModel {
 
     public LiveData<List<ChatRoom>> getAllChatRoomies() { return authRepository.RetrievedChatRoomies(); }
 
-    public LiveData<List<ChatMessage>> getAllMessage(String chatroom_id) {
-                return authRepository.RetrievedChatMessages(chatroom_id); }
+    public LiveData<List<ChatMessage>> getAllMessage(String chatroom_id, final Set<String> mMessageIdSet) {
+                return authRepository.RetrievedChatMessages(chatroom_id, mMessageIdSet); }
 
     public LiveData<String> getErrorUpdates() { return authRepository.getErrorUpdates(); }
 

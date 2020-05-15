@@ -78,7 +78,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void sendRegistrationToserver(String token) {
 
         Log.d(LOG_TAG, "sendRegistrationToServer: sending token to server: " + token);
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
         mDatabaseReference.child(getString(R.string.dbnode_users))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -149,7 +149,7 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 Log.d(LOG_TAG, "onMessageReceived: message: " + message);
                 Log.d(LOG_TAG, "onMessageReceived: chatroom id: " + chatroomId);
 
-                Query query = FirebaseDatabase.getInstance().getReference().child(getString(R.string.dbnode_chatrooms))
+                Query query = FirebaseUtil.getDatabase().getReference().child(getString(R.string.dbnode_chatrooms))
                         .orderByKey()
                         .equalTo(chatroomId);
 

@@ -23,13 +23,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import muchbeer.raum.com.challengeandela.R;
-import muchbeer.raum.com.challengeandela.chatroom.ChatRoomActivity;
 import muchbeer.raum.com.challengeandela.models.ChatMessage;
 import muchbeer.raum.com.challengeandela.models.ChatRoom;
 import muchbeer.raum.com.challengeandela.models.Users;
+import muchbeer.raum.com.challengeandela.utility.FirebaseUtil;
 
 public class AuthRepository {
 
@@ -49,7 +50,7 @@ public class AuthRepository {
 
     public AuthRepository(Application application) {
         this.application = application;
-        reference = FirebaseDatabase.getInstance().getReference();
+        reference = FirebaseUtil.getDatabase().getReference();
     }
 
     public void createNewMessage(String message, String chatroom_id) {
@@ -60,7 +61,7 @@ public class AuthRepository {
         newMessage.setUser_id(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         //get a database reference
-        reference= FirebaseDatabase.getInstance().getReference()
+        reference= FirebaseUtil.getDatabase().getReference()
                 .child(application.getString(R.string.dbnode_chatrooms))
                 .child(chatroom_id)
                 .child(application.getString(R.string.field_chatroom_messages));
@@ -144,7 +145,10 @@ public class AuthRepository {
       return  chatSecurityLevel;
     }
 
-    public MutableLiveData<List<ChatMessage>> RetrievedChatMessages(String chatroom_id) {
+    public MutableLiveData<List<ChatMessage>> RetrievedChatMessages(String chatroom_id,
+                                                              final Set<String> mMessageIdSet) {
+
+
         queryChatMessage = reference.child(application.getString(R.string.dbnode_chatrooms))
                 .child(chatroom_id)
                 .child(application.getString(R.string.field_chatroom_messages));
@@ -162,17 +166,21 @@ public class AuthRepository {
                         //chatroom has no user id
                         ChatMessage message = new ChatMessage();
                         String userId = snapshot.getValue(ChatMessage.class).getUser_id();
-                        if(userId != null){ //check and make sure it's not the first message (has no user id)
-                            message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
-                            message.setUser_id(snapshot.getValue(ChatMessage.class).getUser_id());
-                            message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
-                            mMessageList.add(message);
-                            messagesLiveData.postValue(mMessageList);
-                        }else{
-                            message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
-                            message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
-                            mMessageList.add(message);
-                            messagesLiveData.postValue(mMessageList);
+
+                        if(!mMessageIdSet.contains(snapshot.getKey())) {
+                            mMessageIdSet.add(snapshot.getKey());
+                            if (userId != null) { //check and make sure it's not the first message (has no user id)
+                                message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
+                                message.setUser_id(snapshot.getValue(ChatMessage.class).getUser_id());
+                                message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
+                                mMessageList.add(message);
+                                messagesLiveData.postValue(mMessageList);
+                            } else {
+                                message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
+                                message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
+                                mMessageList.add(message);
+                                messagesLiveData.postValue(mMessageList);
+                            }
                         }
 
                     } catch (NullPointerException e) {

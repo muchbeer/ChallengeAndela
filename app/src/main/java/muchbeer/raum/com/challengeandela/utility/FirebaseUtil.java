@@ -24,6 +24,7 @@ import muchbeer.raum.com.challengeandela.MainActivity;
 public class FirebaseUtil {
 
     public static FirebaseDatabase mFirebaseDatabase;
+
     public static DatabaseReference mDatabaseReference;
     private static FirebaseUtil firebaseUtil;
     public static ArrayList<CarDeals> mDeals;
@@ -129,5 +130,13 @@ connectStorage();
     public static void connectStorage() {
         mStorage = FirebaseStorage.getInstance();
         mStorageRef = mStorage.getReference().child("cars_picture");
+    }
+
+    public static FirebaseDatabase getDatabase() {
+        if (mFirebaseDatabase == null) {
+            mFirebaseDatabase = FirebaseDatabase.getInstance();
+            mFirebaseDatabase.setPersistenceEnabled(true);
+        }
+        return mFirebaseDatabase;
     }
 }

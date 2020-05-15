@@ -48,6 +48,7 @@ import muchbeer.raum.com.challengeandela.fcm.FirebaseCloudMessage;
 import muchbeer.raum.com.challengeandela.models.ServerKey;
 import muchbeer.raum.com.challengeandela.models.Users;
 import muchbeer.raum.com.challengeandela.utility.FCM;
+import muchbeer.raum.com.challengeandela.utility.FirebaseUtil;
 import muchbeer.raum.com.challengeandela.utility.VerticalSpacingDecorator;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -201,7 +202,7 @@ public class AdminActivity extends AppCompatActivity {
      */
     public void getDepartments(){
         mDepartmentsList = new ArrayList<>();
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
         Query query = reference.child(getString(R.string.dbnode_departments));
 
         query.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -304,7 +305,7 @@ public class AdminActivity extends AppCompatActivity {
     private void getDepartmentTokens(){
         Log.d(TAG, "getDepartmentTokens: searching for tokens.");
         mTokens.clear(); //clear current token list in case admin has change departments
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
 
         for(String department: mSelectedDepartments){
             Log.d(TAG, "getDepartmentTokens: department: " + department);
@@ -362,7 +363,7 @@ public class AdminActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Toast.makeText(AdminActivity.this, "Department Saved", Toast.LENGTH_SHORT).show();
-                DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+                DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
                 reference.child(getString(R.string.dbnode_users))
                         .child(user.getUser_id())
                         .child(getString(R.string.field_department))
@@ -383,7 +384,7 @@ public class AdminActivity extends AppCompatActivity {
      */
     private void getEmployeeList() throws NullPointerException{
         Log.d(TAG, "getEmployeeList: getting a list of all employees");
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
 
         Query query = reference.child(getString(R.string.dbnode_users));
 

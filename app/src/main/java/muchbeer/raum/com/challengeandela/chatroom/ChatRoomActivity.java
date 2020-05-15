@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -30,6 +31,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import muchbeer.raum.com.challengeandela.R;
 import muchbeer.raum.com.challengeandela.adapter.ChatMessageAdapter;
@@ -39,6 +42,7 @@ import muchbeer.raum.com.challengeandela.listener.ChatMessageRecyclerClick;
 import muchbeer.raum.com.challengeandela.models.ChatMessage;
 import muchbeer.raum.com.challengeandela.models.ChatRoom;
 import muchbeer.raum.com.challengeandela.models.Users;
+import muchbeer.raum.com.challengeandela.utility.FirebaseUtil;
 
 public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRecyclerClick {
     private static final String TAG = ChatRoomActivity.class.getSimpleName();
@@ -53,7 +57,8 @@ public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRe
     private TextView mChatroomName;
     private RecyclerView recyclerView;
     private EditText mMessage;
-    private ImageView mCheckmark;
+    private Button mCheckmark;
+    private Set<String> mMessageIDSet;
 
     //vars
     private ChatRoom mChatroom;
@@ -101,7 +106,7 @@ public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRe
 
                     mainActivityViewModel.createNewMessages(message, mChatroom.getChatroom_id());
                     mMessage.setText("");
-                    getChatroomMessages();
+                   getChatroomMessages();
                 }
             }
         });
@@ -126,45 +131,92 @@ public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRe
 
 
     private void getChatroomMessages(){
-        mMessagesList = new ArrayList<>();
-        if(mMessagesList.size() > 0){
-            mMessagesList.clear();
 
+        if(mMessagesList == null) {
+            mMessagesList = new ArrayList<>();
+            mMessageIDSet = new HashSet<>();
+            initMessageRecyclerView();
         }
-        Log.d(TAG, "getChatroomMessages: Method before LiveData");
-        mainActivityViewModel.getAllMessage(mChatroom.getChatroom_id()).observe(this, messages -> {
-            Log.d(TAG, "getChatroomMessages: found chatroom message: " + messages);
+final DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
+
+      Query  queryChatMessage = reference.child(getString(R.string.dbnode_chatrooms))
+                .child(mChatroom.getChatroom_id())
+                .child(getString(R.string.field_chatroom_messages));
+
+        queryChatMessage.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot singleSnapshot: dataSnapshot.getChildren()) {
+
+                    DataSnapshot snapshot = singleSnapshot;
+                    Log.d(TAG, "onDataChange: found chatroom message: " + singleSnapshot.getValue());
+
+                    try {
+                        //need to catch null pointer here because the initial welcome message to the
+                        //chatroom has no user id
+                        ChatMessage message = new ChatMessage();
+                        String userId = snapshot.getValue(ChatMessage.class).getUser_id();
+
+                        if(!mMessageIDSet.contains(snapshot.getKey())) {
+                            mMessageIDSet.add(snapshot.getKey());
+                            if (userId != null) { //check and make sure it's not the first message (has no user id)
+                                message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
+                                message.setUser_id(snapshot.getValue(ChatMessage.class).getUser_id());
+                                message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
+                                mMessagesList.add(message);
+
+                            } else {
+                                message.setMessage(snapshot.getValue(ChatMessage.class).getMessage());
+                                message.setTimestamp(snapshot.getValue(ChatMessage.class).getTimestamp());
+                                mMessagesList.add(message);
+
+                            }
+                        }
+
+                    } catch (NullPointerException e) {
+                        Log.e(TAG, "onDataChange: NullPointerException: " + e.getMessage());
+                    }
+                }
+                getUserDetails();
+                adapter.notifyDataSetChanged();
+                recyclerView.scrollToPosition(mMessagesList.size() -1);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Log.d(TAG, "message error is :" + databaseError);
+            }
+        });
+
+       /* mainActivityViewModel.getAllMessage(mChatroom.getChatroom_id()).observe(this, messages -> {
 
             if(messages !=null) {
                 mMessagesList = (ArrayList) messages;
                 Log.d(TAG, "mMessageList from the livedata is: " + mMessagesList);
-                //query the users node to get the profile images and names
+
                 getUserDetails();
-
                 initMessageRecyclerView();
-
+                adapter.notifyDataSetChanged();
+                recyclerView.scrollToPosition(mMessagesList.size() -1);
             }else {
                 Log.d(TAG, "Error come is here: " );
             }
 
-        });
+        });*/
       }
 
     private void initMessageRecyclerView() {
         Log.d(TAG, "received data from mMessageList is:  "+ mMessagesList );
-      adapter = new ChatMessageAdapter(this, mMessagesList, (ChatMessageRecyclerClick) this);
+        adapter = new ChatMessageAdapter(this, mMessagesList, (ChatMessageRecyclerClick) this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
-            recyclerView.setItemAnimator(new DefaultItemAnimator());
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
         recyclerView.setAdapter(adapter);
-        recyclerView.scrollToPosition(mMessagesList.size() - 1);
-        adapter.notifyDataSetChanged();
-
-    }
+           }
 
     private void getUserDetails(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
         for(int i = 0; i < mMessagesList.size(); i++) {
             Log.d(TAG, "onDataChange: searching for userId: " + mMessagesList.get(i).getUser_id());
             final int j = i;
@@ -198,14 +250,12 @@ public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRe
     }
 
 
-     /*
-            ----------------------------- Firebase setup ---------------------------------
-    */
 
     @Override
     protected void onResume() {
         super.onResume();
         checkAuthenticationState();
+
     }
 
     private void checkAuthenticationState(){
@@ -261,6 +311,10 @@ public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRe
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             getChatroomMessages();
+
+            //get the number of messages currently in the chat and update the database
+            int numMessages = (int) dataSnapshot.getChildrenCount();
+            updateNumMessage(numMessages);
         }
 
         @Override
@@ -269,11 +323,22 @@ public class ChatRoomActivity extends AppCompatActivity implements ChatMessageRe
         }
     };
 
+    private void updateNumMessage(int numMessages) {
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
+
+        reference.child(getString(R.string.dbnode_chatrooms))
+                    .child(mChatroom.getChatroom_id())
+                    .child(getString(R.string.field_users))
+                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                    .child(getString(R.string.field_last_message_seen))
+                    .setValue(String.valueOf(numMessages));
+    }
+
     private void enableChatroomListener(){
          /*
             ---------- Listener that will watch the 'chatroom_messages' node ----------
          */
-        mMessagesReference = FirebaseDatabase.getInstance().getReference().child(getString(R.string.dbnode_chatrooms))
+        mMessagesReference = FirebaseUtil.getDatabase().getReference().child(getString(R.string.dbnode_chatrooms))
                 .child(mChatroom.getChatroom_id())
                 .child(getString(R.string.field_chatroom_messages));
 

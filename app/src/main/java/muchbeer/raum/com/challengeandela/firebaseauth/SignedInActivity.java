@@ -115,7 +115,7 @@ public class SignedInActivity extends AppCompatActivity {
     public void sendRegistrationToserver(String token) {
 
         Log.d(TAG, "sendRegistrationToServer: sending token to server: " + token);
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
         mDatabaseReference = FirebaseUtil.mDatabaseReference;
         reference.child(getString(R.string.dbnode_users))
                 .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
@@ -211,7 +211,7 @@ public class SignedInActivity extends AppCompatActivity {
     }
 
     private void isAdmin(){
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference();
+        DatabaseReference reference = FirebaseUtil.getDatabase().getReference();
         Query query = reference.child(getString(R.string.dbnode_users))
                 .orderByChild(getString(R.string.field_user_id))
                 .equalTo(FirebaseAuth.getInstance().getCurrentUser().getUid());
@@ -240,6 +240,19 @@ public class SignedInActivity extends AppCompatActivity {
 
             }
         });
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        MenuItem item = menu.findItem(R.id.optionAdmin);
+        if(mIsAdmin) {
+           Intent intent = new Intent(SignedInActivity.this, AdminActivity.class);
+            startActivity(intent);
+        } else {
+        item.setVisible(false); }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -247,9 +260,7 @@ public class SignedInActivity extends AppCompatActivity {
 
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
-   //   getMenuInflater().inflate(R.menu.options_menu, menu);
-
-        return true;
+          return true;
         }
 
     @Override
@@ -271,14 +282,7 @@ public class SignedInActivity extends AppCompatActivity {
 
             case R.id.optionAdmin:
 
-                if(mIsAdmin){
-                    intent = new Intent(SignedInActivity.this, AdminActivity.class);
-                    startActivity(intent);
-                }else{
-                    Toast.makeText(this, "You're not an Admin", Toast.LENGTH_SHORT).show();
-                }
-
-                return true;
+                    return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
