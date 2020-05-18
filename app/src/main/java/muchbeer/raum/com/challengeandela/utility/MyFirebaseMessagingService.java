@@ -293,11 +293,6 @@ notificationTitle = remoteMessage.getNotification().getTitle();
         mNotificationManager.notify(BROADCAST_NOTIFICATION_ID, notification);
     }
 
-    /**
-     * Build a push notification for a chat message
-     * @param title
-     * @param message
-     */
     private void sendChatmessageNotification(String title, String message, ChatRoom chatroom){
         Log.d(LOG_TAG, "sendChatmessageNotification: building a chatmessage notification");
 
